@@ -14,11 +14,13 @@ namespace CalculatorApp
 {
     public partial class Form1 : Form
     {
+        //private Dictionary<char, Button> keyButtonMapping;
         public Form1()
         {
             InitializeComponent();
             //this.KeyPreview = true;
-            this.KeyPress += new KeyPressEventHandler(Form1_KeyPress);
+            //this.KeyPress += new KeyPressEventHandler(Form1_KeyPress);
+            //this.KeyDown += Form1_KeyDown;
         }
         string collect = "";
         bool deleteKey;
@@ -250,12 +252,11 @@ namespace CalculatorApp
 
         private void btnEquals_Click(object sender, EventArgs e)
         {
-            string keep = collect;
-            txtAnswer.Clear();
-            string pattern = @"^\d+ |\D+";
-            string[] results;
-            results = Regex.Split(collect, pattern);
-            int[] digits = new int[results.Length];
+            //txtAnswer.Clear();
+            //string pattern = @"^\d+ |\D+";
+            //string[] results;
+            //results = Regex.Split(collect, pattern);
+            //int[] digits = new int[results.Length];
 
 
 
@@ -266,6 +267,7 @@ namespace CalculatorApp
 
             int index = 0;
             int answer =int.Parse(result1[0]);
+            int divisionAnswer = 1;
             for (int i = 0; i < result1.Length; i++)
             {
                 if (result1[i] == "*") 
@@ -277,7 +279,16 @@ namespace CalculatorApp
                 {
                     index = i;
                     answer = Division(index, result1, answer);
-                }
+
+
+					if (answer == 0)
+                    {						
+                        i = result1.Length;
+                        divisionAnswer = answer;
+                        break;
+					}
+
+				}
                 else if(result1[i] == "+")
                 {
                     index = i;
@@ -287,6 +298,7 @@ namespace CalculatorApp
                 {
                     index = i;
                     answer = Subtraction(index, result1, answer);
+
                 }
                 else if (result1[i] == "%")
                 {
@@ -295,8 +307,17 @@ namespace CalculatorApp
                 }
             }
            
-            txtAnswer.Text = answer.ToString();
-            collect = "";
+            if(divisionAnswer == 0)
+            {
+				txtAnswer.Text = "Unknown Error: null";
+				collect = "";
+			}
+            else
+            {
+				txtAnswer.Text = answer.ToString();
+				collect = "";
+			}
+            
         }
         public int Multiplication(int index, string[] result1, int answer)
         {
@@ -307,8 +328,19 @@ namespace CalculatorApp
         public int Division(int index, string[] result1, int answer)
         {
             int num = int.Parse(result1[index + 1]);
-            int returnAnswer = answer / num;
-            return returnAnswer;
+			int returnAnswer;
+			
+			if (num == 0)
+            {
+                returnAnswer = 0;
+                return returnAnswer;
+            }
+            else 
+            {
+				returnAnswer = answer / num;
+				return returnAnswer;
+			}
+             
         }
         public int Addition(int index, string[] result1, int answer)
         {
@@ -328,5 +360,9 @@ namespace CalculatorApp
             int returnAnswer = answer % num;
             return returnAnswer;
         }
-    }
+
+      
+
+		
+	}
 }
