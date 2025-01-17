@@ -14,91 +14,15 @@ namespace CalculatorApp
 {
     public partial class Form1 : Form
     {
-        //private Dictionary<char, Button> keyButtonMapping;
+       
         public Form1()
         {
             InitializeComponent();
-            //this.KeyPreview = true;
-            //this.KeyPress += new KeyPressEventHandler(Form1_KeyPress);
-            //this.KeyDown += Form1_KeyDown;
+            
         }
         string collect = "";
         bool deleteKey;
       
-
-        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            //Stores the key that was pressed
-            char keyPressed = e.KeyChar;
-
-            //use Switch case because theres going to be multiple alterntives
-
-            switch (keyPressed)
-            {
-                case 'C':
-                case 'c':
-                    btnStart.Focus();
-                    break;
-                case ')':
-                case '(':
-                    btnParenthesis.Focus();
-                    break;
-                case '%':
-                    btnModulas.Focus();
-                    break;
-                case '/':
-                    btnDivide.Focus();
-                    break;
-                case '*':
-                case 'x':
-                    btnMultiply.Focus();
-                    break;
-                case '-':
-                    btnMinus.Focus();
-                    break;
-                case '+':
-                    btnAddition.Focus();
-                    break;
-                case '=':
-                    btnEquals.Focus();
-                    break;
-                case '.':
-                    btnPeriod.Focus();
-                    break;
-                case '0':
-                    btnZero.Focus();
-                    break;
-                case '1':
-                    btnOne.Focus();
-                    break;
-                case '2':
-                    btnTwo.Focus();
-                    break;
-                case '3':
-                    btnThree.Focus();
-                    break;
-                case '4':
-                    btnFour.Focus();
-                    break;
-                case '5':
-                    btnFive.Focus();
-                    break;
-                case '6':
-                    btnSix.Focus();
-                    break;
-                case '7':
-                    btnSeven.Focus();
-                    break;
-                case '8':
-                    btnEight.Focus();
-                    break;
-                case '9':
-                    btnNine.Focus();
-                    break;
-
-            }
-        }
-
         private void Form1_Load(object sender, EventArgs e)
         {
             txtDisplay.Text = "0";
@@ -182,17 +106,12 @@ namespace CalculatorApp
             txtDisplay.Text = collect;
         }
 
-        private void btnParenthesis_Click(object sender, EventArgs e)
-        {
-            txtDisplay.Text = "";
-            collect += "()";
-            txtDisplay.Text = collect;
-        }
+       
 
         private void btnStart_Click(object sender, EventArgs e)
         {          
             txtDisplay.Text = "0";
-            collect = " ";
+            collect = "";
             txtAnswer.Text = "0";
         }
 
@@ -234,7 +153,7 @@ namespace CalculatorApp
         private void btnDeleteKey_Click(object sender, EventArgs e)
         {
             deleteKey = true;
-            //string collect1 = txtDisplay.Text ;
+           
             string a = "";
             for(int i = 0; i < collect.Length - 1; i++)
             {
@@ -252,114 +171,170 @@ namespace CalculatorApp
 
         private void btnEquals_Click(object sender, EventArgs e)
         {
-            //txtAnswer.Clear();
-            //string pattern = @"^\d+ |\D+";
-            //string[] results;
-            //results = Regex.Split(collect, pattern);
-            //int[] digits = new int[results.Length];
-
-
-
-
 
             string pattern1 = @"([\+\-\*\%\/])";
             string[] result1 = Regex.Split(collect, pattern1);
 
-            int index = 0;
-            int answer =int.Parse(result1[0]);
-            int divisionAnswer = 1;
-            for (int i = 0; i < result1.Length; i++)
+            // Handling Multiplication, Division and Modulo first
+            for(int i = 0; i < result1.Length; i++)
             {
-                if (result1[i] == "*") 
+                if (result1[i] == "*")
                 {
-                    index = i;
-                    answer = Multiplication(index, result1, answer); 
+                    int answer = Multiplication(i, result1);
+                    result1 = UpdateExpression(i, result1,  answer);
+                    i--;
                 }
-                else if(result1[i] == "/")
+                else if (result1[i] == "/")
                 {
-                    index = i;
-                    answer = Division(index, result1, answer);
+                    int answer = Division(i, result1);
 
-
-					if (answer == 0)
-                    {						
-                        i = result1.Length;
-                        divisionAnswer = answer;
-                        break;
-					}
-
-				}
-                else if(result1[i] == "+")
-                {
-                    index = i;
-                    answer = Addition(index, result1, answer);
-                }
-                else if(result1[i] == "-")
-                {
-                    index = i;
-                    answer = Subtraction(index, result1, answer);
-
+                    if(answer == int.MinValue)
+                    {
+                        txtAnswer.Text = "Error: Division by Zero";
+                        collect = "";
+                        return;
+                    }
+                    result1 = UpdateExpression(i, result1, answer);
+                    i--;
                 }
                 else if (result1[i] == "%")
                 {
-                    index = i;
-                    answer = Remainder(index, result1, answer);
+                    int answer = Remainder(i, result1);
+                    result1 = UpdateExpression(i, result1 , answer);
+                    i--;
                 }
             }
+
+            //Handling Addition and Subtraction
+            for(int a = 0; a < result1.Length; a++)
+            {
+                if (result1[a] == "+")
+                {
+                    int answer = Addition(a, result1);  
+                    result1 = UpdateExpression(a, result1, answer);
+                    a--;
+                }
+                else if (result1[a] == "-")
+                {
+                    int answer = Subtraction(a, result1);
+                    result1 = UpdateExpression(a, result1 , answer);
+                    a--;
+                }
+            }
+
+            //Displaying the answer that will be the only one left at index[0]
+            txtAnswer.Text = result1[0];
+            collect = "";
+
+   //         int index = 0;
+
+   //         int answer =int.Parse(result1[0]);
+   //         int divisionAnswer = 1;
+   //         for (int i = 0; i < result1.Length; i++)
+   //         {
+   //             if (result1[i] == "*") 
+   //             {
+   //                 index = i;
+   //                 answer = Multiplication(index, result1, answer); 
+   //             }
+   //             else if(result1[i] == "/")
+   //             {
+   //                 index = i;
+   //                 answer = Division(index, result1, answer);
+
+
+			//		if (answer == 0)
+   //                 {						
+   //                     i = result1.Length;
+   //                     divisionAnswer = answer;
+   //                     break;
+			//		}
+
+			//	}
+   //             else if(result1[i] == "+")
+   //             {
+   //                 index = i;
+   //                 answer = Addition(index, result1, answer);
+   //             }
+   //             else if(result1[i] == "-")
+   //             {
+   //                 index = i;
+   //                 answer = Subtraction(index, result1, answer);
+
+   //             }
+   //             else if (result1[i] == "%")
+   //             {
+   //                 index = i;
+   //                 answer = Remainder(index, result1, answer);
+   //             }
+   //         }
            
-            if(divisionAnswer == 0)
-            {
-				txtAnswer.Text = "Unknown Error: null";
-				collect = "";
-			}
-            else
-            {
-				txtAnswer.Text = answer.ToString();
-				collect = "";
-			}
+   //         if(divisionAnswer == 0)
+   //         {
+			//	txtAnswer.Text = "Unknown Error: null";
+			//	collect = "";
+			//}
+   //         else
+   //         {
+			//	txtAnswer.Text = answer.ToString();
+			//	collect = "";
+			//}
             
         }
-        public int Multiplication(int index, string[] result1, int answer)
+        public string[] UpdateExpression(int index, string[] results, int answer)
         {
-            int num = int.Parse(result1[index + 1]);
-            int returnAnswer = answer * num;
-            return returnAnswer;
+            List<string> updatedExpression = new List<string>(results);
+            updatedExpression[index - 1] = answer.ToString(); //Places the latest answer in the correct index
+            updatedExpression.RemoveAt(index);    // Removes the operator
+            updatedExpression.RemoveAt(index);  //Removes the second number used in the calculation
+            return updatedExpression.ToArray();
         }
-        public int Division(int index, string[] result1, int answer)
+        public int Multiplication(int index, string[] result1)
         {
-            int num = int.Parse(result1[index + 1]);
-			int returnAnswer;
+            int num1 = int.Parse(result1[index - 1]);
+            int num2 = int.Parse(result1[index + 1]);
+            return num1 * num2;
+        }
+        public int Division(int index, string[] result1)
+        {
+            int num1 = int.Parse(result1[index - 1]);
+            int num2 = int.Parse(result1[index + 1]);
+            if (num2 == 0)
+                return int.MinValue;
+
+            return num1 / num2;
 			
-			if (num == 0)
-            {
-                returnAnswer = 0;
-                return returnAnswer;
-            }
-            else 
-            {
-				returnAnswer = answer / num;
-				return returnAnswer;
-			}
+			//if (num == 0)
+   //         {
+   //             returnAnswer = 0;
+   //             return returnAnswer;
+   //         }
+   //         else 
+   //         {
+			//	returnAnswer = answer / num;
+			//	return returnAnswer;
+			//}
              
         }
-        public int Addition(int index, string[] result1, int answer)
+        public int Remainder(int index, string[] result1)
         {
-            int num = int.Parse(result1[index + 1]);
-            int returnAnswer = answer + num;
-            return returnAnswer;
+            int num1 = int.Parse(result1[index - 1]);
+            int num2 = int.Parse(result1[index + 1]);
+            return num1 % num2; 
         }
-        public int Subtraction(int index, string[] result1, int answer)
+        public int Addition(int index, string[] result1)
         {
-            int num = int.Parse(result1[index + 1]);
-            int returnAnswer = answer - num;
-            return returnAnswer;
+            int num1 = int.Parse(result1[index - 1]);   
+            int num2 = int.Parse(result1[index + 1]);
+            return num1 + num2 ;
         }
-        public int Remainder(int index, string[] result1, int answer)
+        public int Subtraction(int index, string[] result1)
         {
-            int num = int.Parse(result1[index + 1]);
-            int returnAnswer = answer % num;
-            return returnAnswer;
+            int num1 = int.Parse(result1[index - 1]);
+            int num2 = int.Parse(result1[index + 1]);
+            return num1 - num2;
         }
+       
 
       
 
